@@ -1,0 +1,56 @@
+name: Build and Release Rust Bun
+
+on:
+  push:
+    tags:
+      - 'v*'  # This triggers the workflow for tags starting with "v", e.g., v1.0.0
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: macos-latest
+            target: x86_64-apple-darwin
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+          - os: ubuntu-latest
+            target: aarch64-unknown-linux-gnu
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Rust toolchain for ${{ matrix.target }}
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: ${{ matrix.target }}
+
+      - name: Install cross-compilation dependencies (Linux ARM)
+        if: matrix.target == 'aarch64-unknown-linux-gnu'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-aarch64-linux-gnu
+
+      - name: Build release binary
+        run: cargo build --target ${{ matrix.target }} --release --verbose
+
+      - name: Package binary
+        run: |
+          mkdir -p release-artifacts
+          cp target/${{ matrix.target }}/release/proxyplz release-artifacts/proxyplz-${{ matrix.target }}
+          tar -czf release-artifacts/proxyplz-${{ matrix.target }}.tar.gz -C release-artifacts proxyplz-${{ matrix.target }}
+
+      - name: Create or Update GitHub Release and Upload Asset
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          asset_path: release-artifacts/proxyplz-${{ matrix.target }}.tar.gz
+          asset_name: proxyplz-${{ matrix.target }}.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
