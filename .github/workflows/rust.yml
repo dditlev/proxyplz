@@ -46,15 +46,15 @@ jobs:
       - name: Package binary
         run: |
           mkdir -p release-artifacts
-          cp target/${{ matrix.target }}/release/your_binary release-artifacts/your_binary-${{ matrix.target }}
-          tar -czf release-artifacts/your_binary-${{ matrix.target }}.tar.gz -C release-artifacts your_binary-${{ matrix.target }}
+          cp target/${{ matrix.target }}/release/proxyplz release-artifacts/proxyplz-${{ matrix.target }}
+          tar -czf release-artifacts/proxyplz-${{ matrix.target }}.tar.gz -C release-artifacts proxyplz-${{ matrix.target }}
 
       - name: Create or Update GitHub Release and Upload Asset
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ github.ref_name }}
           name: Release ${{ github.ref_name }}
-          asset_path: release-artifacts/your_binary-${{ matrix.target }}.tar.gz
-          asset_name: your_binary-${{ matrix.target }}.tar.gz
+          asset_path: release-artifacts/proxyplz-${{ matrix.target }}.tar.gz
+          asset_name: proxyplz-${{ matrix.target }}.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
