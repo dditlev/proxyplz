@@ -1,9 +1,9 @@
-name: Build and Release Rust Bun
+name: Build and Release Rust Bins
 
 on:
   push:
     tags:
-      - 'v*'  # This triggers the workflow for tags starting with "v", e.g., v1.0.0
+      - "v*" # Triggers on tags like v1.0.0
 
 env:
   CARGO_TERM_COLOR: always
@@ -36,21 +36,25 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y gcc-aarch64-linux-gnu
 
+      - name: Configure cross linker for aarch64
+        if: matrix.target == 'aarch64-unknown-linux-gnu'
+        run: echo "CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER=aarch64-linux-gnu-gcc" >> $GITHUB_ENV
+
       - name: Build release binary
         run: cargo build --target ${{ matrix.target }} --release --verbose
 
       - name: Package binary
         run: |
           mkdir -p release-artifacts
-          cp target/${{ matrix.target }}/release/proxyplz release-artifacts/proxyplz-${{ matrix.target }}
-          tar -czf release-artifacts/proxyplz-${{ matrix.target }}.tar.gz -C release-artifacts proxyplz-${{ matrix.target }}
+          cp target/${{ matrix.target }}/release/your_binary release-artifacts/your_binary-${{ matrix.target }}
+          tar -czf release-artifacts/your_binary-${{ matrix.target }}.tar.gz -C release-artifacts your_binary-${{ matrix.target }}
 
       - name: Create or Update GitHub Release and Upload Asset
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ github.ref_name }}
           name: Release ${{ github.ref_name }}
-          asset_path: release-artifacts/proxyplz-${{ matrix.target }}.tar.gz
-          asset_name: proxyplz-${{ matrix.target }}.tar.gz
+          asset_path: release-artifacts/your_binary-${{ matrix.target }}.tar.gz
+          asset_name: your_binary-${{ matrix.target }}.tar.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
