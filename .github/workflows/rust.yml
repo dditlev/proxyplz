@@ -5,10 +5,6 @@ on:
     tags:
       - 'v*'  # This triggers the workflow for tags starting with "v", e.g., v1.0.0
 
-# Grant permission to create releases
-permissions:
-  releases: write
-
 env:
   CARGO_TERM_COLOR: always
 
